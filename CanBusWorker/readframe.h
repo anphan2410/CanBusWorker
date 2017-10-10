@@ -11,6 +11,7 @@ public:
     readFrame(CanBusWorkerDB * database);
 protected:
     void onEntry(QEvent *) override;
+    void onExit(QEvent *) override;
 private:
     CanBusWorkerDB * dbPtr = Q_NULLPTR;
 };

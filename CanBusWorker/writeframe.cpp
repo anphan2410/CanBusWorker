@@ -3,7 +3,7 @@
 writeFrame::writeFrame(CanBusWorkerDB *database) :
     dbPtr(database)
 {
-    anAck("Construct A New State");
+    anIf(CanBusWorkerDBDbgEn, anTrk("State Constructed !"));
     TimerFrameWritten.setParent(this);
     TimerFrameWritten.setInterval(3000);
     TimerFrameWritten.setSingleShot(true);
@@ -20,5 +20,10 @@ writeFrame::writeFrame(CanBusWorkerDB *database) :
 
 void writeFrame::onEntry(QEvent *)
 {
-    anAck("Enter State ...");
+    anIf(CanBusWorkerDBDbgEn, anTrk("State Entered !"));
+}
+
+void writeFrame::onExit(QEvent *)
+{
+    anIf(CanBusWorkerDBDbgEn, anTrk("Leave State !"));
 }

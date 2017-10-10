@@ -17,5 +17,5 @@ bool DeviceConnected::eventTest(QEvent *e)
 
 void DeviceConnected::onTransition(QEvent *)
 {
-    emit dbPtr->Out(new QVariant(QVariant::fromValue(CanBusWorkerDB::DeviceConnected)));
+    emit dbPtr->Out(QVariant::fromValue(CanBusWorkerDB::DeviceConnected));
 }

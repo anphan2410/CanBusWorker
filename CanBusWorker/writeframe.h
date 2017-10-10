@@ -14,8 +14,9 @@ public:
     writeFrame(CanBusWorkerDB * database);
 protected:
     void onEntry(QEvent *) override;
+    void onExit(QEvent *) override;
 private:
-    CanBusWorkerDB * dbPtr = Q_NULLPTR;
+    CanBusWorkerDB * dbPtr = NULL;
     QTimer TimerFrameWritten;
 };
 

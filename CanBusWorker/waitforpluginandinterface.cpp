@@ -3,15 +3,15 @@
 waitForPluginAndInterface::waitForPluginAndInterface(CanBusWorkerDB *database, quint32 TimerIntervalInMiliSecond) :
     TimerIntervalMSecs(TimerIntervalInMiliSecond)
 {
-    anAck("Construct A New State !");
+    anIf(CanBusWorkerDBDbgEn, anTrk("State Constructed !"));
     if (TimerIntervalInMiliSecond > 0)
     {
         timer.setParent(this);
         timer.setInterval(TimerIntervalInMiliSecond);
         QObject::connect(&timer, &QTimer::timeout,
                          this, [database](){
-            anAck("Emit CanBusWorkerDB::requestPluginAndInterface");
-            emit database->Out(new QVariant(QVariant::fromValue(CanBusWorkerDB::requestPluginAndInterface)));
+            anIf(CanBusWorkerDBDbgEn, anAck("Emit CanBusWorkerDB::requestPluginAndInterface"));
+            emit database->Out(QVariant::fromValue(CanBusWorkerDB::requestPluginAndInterface));
         });
     }
 
@@ -19,13 +19,14 @@ waitForPluginAndInterface::waitForPluginAndInterface(CanBusWorkerDB *database, q
 
 void waitForPluginAndInterface::onEntry(QEvent *)
 {
-    anAck("Enter State ...");
+    anIf(CanBusWorkerDBDbgEn, anTrk("State Entered !"));
     if (TimerIntervalMSecs > 0)
         timer.start();
 }
 
 void waitForPluginAndInterface::onExit(QEvent *)
 {
+    anIf(CanBusWorkerDBDbgEn, anTrk("Leave State !"));
     if (TimerIntervalMSecs > 0)
         timer.stop();
 }

@@ -19,9 +19,9 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 signals:
-    void Out(QVariant *, QVariant * = Q_NULLPTR);
+    void Out(QVariant, QVariant = QVariant());
 private slots:
-    void In(QVariant * enumVar, QVariant * dataVar = Q_NULLPTR);
+    void In(QVariant enumVar, QVariant dataVar = QVariant());
     void on_pushButton_SendARandomMessage_clicked();
 
     void on_pushButton_clearPendingFrameList_clicked();

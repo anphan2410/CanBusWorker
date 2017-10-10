@@ -2,7 +2,7 @@
 
 CanBusWorker::CanBusWorker(QObject *parent) : QStateMachine(parent)
 {
-    anAck("Construct A New CanBusWorker");
+    anIf(CanBusWorkerDbgEn, anTrk("Object Constructed !"));
     currentDB = new CanBusWorkerDB(this);
 
     waitForPluginAndInterface * state0 = new waitForPluginAndInterface(currentDB,1000);
@@ -51,62 +51,51 @@ CanBusWorker::CanBusWorker(QObject *parent) : QStateMachine(parent)
 
     QObject::connect(currentDB, &CanBusWorkerDB::Out, this, &CanBusWorker::Out,
                      CanBusWorkerDB::uniqueQtConnectionType);
-    QObject::connect(this, &CanBusWorker::started,
-                     currentDB, &CanBusWorkerDB::initialize,
-                     CanBusWorkerDB::uniqueQtConnectionType);
 }
 
 CanBusWorker::~CanBusWorker()
 {
-    delete currentDB;
-    currentDB = Q_NULLPTR;
+    if (currentDB)
+    {
+        delete currentDB;
+        currentDB = Q_NULLPTR;
+    }
+    anIf(CanBusWorkerDbgEn, anTrk("Object Destroyed !"));
 }
 
-void CanBusWorker::In(QVariant *enumVar, QVariant *dataVar)
-{
+void CanBusWorker::In(QVariant enumVar, QVariant dataVar)
+{    
     if (this->isRunning())
     {
-        anAck("A Signal Received !");
-        QString enumVarTypeName(enumVar->typeName());
-        if (enumVarTypeName == QStringLiteral("CanBusWorkerDB::DataGet"))
+        anIf(CanBusWorkerDbgEn, anTrk("Signal-To-CanBusWorker Received !"));
+        QString enumVarTypeName(enumVar.typeName());
+        if (enumVarTypeName == QStringLiteral("CanBusWorkerDB::Data"))
         {
-            anAck("" + enumVarTypeName + " Parsed !");
-            switch (enumVar->toInt()) {
+            switch (enumVar.toInt()) {
             case CanBusWorkerDB::requestPluginAndInterface:
             {
-                anInfo("requestPluginAndInterface");
-                emit Out(new QVariant(QVariant::fromValue(CanBusWorkerDB::requestPluginAndInterface)),
-                         new QVariant(QVariant::fromValue(*(currentDB->currentPluginAndInterface))));
+                anIf(CanBusWorkerDbgEn, anInfo("requestPluginAndInterface"));
+                emit Out(QVariant::fromValue(CanBusWorkerDB::requestPluginAndInterface),
+                         QVariant::fromValue(currentDB->currentPluginAndInterface));
                 break;
             }
-            default:
-                break;
-            }
-        }
-        else if (enumVarTypeName == QStringLiteral("CanBusWorkerDB::DataSet"))
-        {
-            anAck("" + enumVarTypeName + " Parsed !");
-            switch (enumVar->toInt()) {
             case CanBusWorkerDB::replyPluginAndInterface:
             {
-                anInfo("replyPluginAndInterface");
-                currentDB->currentPluginAndInterface = new CanBusWorkerDB::PluginNameAndInterfaceName(
-                            dataVar->value<CanBusWorkerDB::PluginNameAndInterfaceName>());
+                anIf(CanBusWorkerDbgEn, anInfo("replyPluginAndInterface"));
+                currentDB->currentPluginAndInterface = dataVar.value<CanBusWorkerDB::PluginNameAndInterfaceName>();
                 emit currentDB->PluginAndInterfaceChanged();
                 break;
             }
             case CanBusWorkerDB::clearPendingFrameList:
             {
-                anInfo("clearPendingFrameList");
-                currentDB->pendingFrameList->clear();
+                anIf(CanBusWorkerDbgEn, anInfo("clearPendingFrameList"));
+                currentDB->pendingFrameList.clear();
                 break;
             }
             case CanBusWorkerDB::addAFrameIntoPendingFrameList:
             {
-                anInfo("addAFrameIntoPendingFrameList");
-                QCanBusFrame * tmp = new QCanBusFrame();
-                *tmp = dataVar->value<QCanBusFrame>();
-                currentDB->pendingFrameList->append(tmp);
+                anIf(CanBusWorkerDbgEn, anInfo("addAFrameIntoPendingFrameList"));
+                currentDB->pendingFrameList.append(dataVar.value<QCanBusFrame>());
                 emit currentDB->aFrameAdded();
                 break;
             }
@@ -114,12 +103,5 @@ void CanBusWorker::In(QVariant *enumVar, QVariant *dataVar)
                 break;
             }
         }
-    }
-    delete enumVar;
-    enumVar = Q_NULLPTR;
-    if (dataVar)
-    {
-        delete dataVar;
-        dataVar = Q_NULLPTR;
     }
 }

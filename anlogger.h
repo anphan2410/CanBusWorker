@@ -313,7 +313,7 @@ static char anStdErrBuffer[BUFSIZ];
                 QTextStream(tmpQStrrBefore##newMsgStrVar, QIODevice::ReadWrite) << msgIn;\
                 newMsgStrVar = tmpQStrrBefore##newMsgStrVar->toStdString();\
                 delete tmpQStrrBefore##newMsgStrVar;\
-                tmpQStrrBefore##newMsgStrVar = Q_NULLPTR;\
+                tmpQStrrBefore##newMsgStrVar = NULL;\
             }
 #else
     #define anTmpSaveMsgInputToAStdStrVar(msgIn,newMsgStrVar)\

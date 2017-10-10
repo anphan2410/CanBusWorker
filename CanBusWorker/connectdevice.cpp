@@ -3,18 +3,23 @@
 connectDevice::connectDevice(CanBusWorkerDB *database) :
     dbPtr(database)
 {
-    anAck("Construct A New State !");
+    anIf(CanBusWorkerDBDbgEn, anTrk("State Constructed !"));
 }
 
 void connectDevice::onEntry(QEvent *)
 {
-    anAck("Enter State ...");
+    anIf(CanBusWorkerDBDbgEn, anTrk("State Entered !"));
     if (dbPtr->currentDev->connectDevice())
     {
-        anInfo("Successfully Connect Device !");
+        anIf(CanBusWorkerDBDbgEn, anAck("Successfully Connect Device !"));
     }
     else
     {
-        anInfo("Failed To Connect Device !");
+        anIf(CanBusWorkerDBDbgEn, anError("Failed To Connect Device !"));
     }
+}
+
+void connectDevice::onExit(QEvent *)
+{
+    anIf(CanBusWorkerDBDbgEn, anTrk("Leave State !"));
 }

@@ -8,56 +8,67 @@ CanBusWorkerDB::CanBusWorkerDB(QObject *parent) :
     qRegisterMetaType<QCanBusDevice::CanBusError>("QCanBusDevice::CanBusError");
     qRegisterMetaType<CanBusWorkerDB::CanBusFrameWithTimeStamp>("CanBusWorkerDB::CanBusFrameWithTimeStamp");
     qRegisterMetaType<CanBusWorkerDB::PluginNameAndInterfaceName>("CanBusWorkerDB::PluginNameAndInterfaceName");
+    anIf(CanBusWorkerDBDbgEn, anTrk("Object Constructed !"));
 }
 
 CanBusWorkerDB::~CanBusWorkerDB()
 {
-    sweepGarbage();
-}
-
-void CanBusWorkerDB::initialize()
-{
-    anAck("CanBusWorkerDB Initialized !");
-    sweepGarbage();
-    ErrorType = new Error(NoError);
-    ErrorInfo = new QString("");
-    pendingFrameList = new QList<QCanBusFrame*>();
-}
-
-void CanBusWorkerDB::sweepGarbage()
-{
-    if (currentPluginAndInterface)
-        delete currentPluginAndInterface;
-    if (currentDev)
-        delete currentDev;
-    if (ErrorType)
-        delete ErrorType;
-    if (ErrorInfo)
-        delete ErrorInfo;
-    if (lastFrameTransmitted)
-        delete lastFrameTransmitted;
-    if (pendingFrameList)
-        delete pendingFrameList;
-    currentPluginAndInterface = Q_NULLPTR;
-    currentDev = Q_NULLPTR;
-    ErrorType = Q_NULLPTR;
-    ErrorInfo = Q_NULLPTR;
-    lastFrameTransmitted = Q_NULLPTR;
-    pendingFrameList = Q_NULLPTR;
+    dispose();
+    anIf(CanBusWorkerDBDbgEn, anTrk("Object Destroyed !"));
 }
 
 void CanBusWorkerDB::setError(const Error &anErrorType, const QString &anErrorInfo)
 {
-    *ErrorType = anErrorType;
-    *ErrorInfo = anErrorInfo;
-    emit ErrorOccurred();
+    if (anErrorType!=NoError)
+    {
+        anIf(CanBusWorkerDBDbgEn, anError("Error Occurred !"));
+        ErrorType = anErrorType;
+        ErrorInfo = anErrorInfo;
+        emit ErrorOccurred();
+    }
 }
 
 void CanBusWorkerDB::clearError()
 {
-    *ErrorType = NoError;
-    ErrorInfo->clear();
+    anIf(CanBusWorkerDBDbgEn && (ErrorType!=NoError), anInfo("Clear Error !"));
+    ErrorType = NoError;
+    ErrorInfo.clear();
 }
 
+void CanBusWorkerDB::initialize()
+{
+    dispose();
+    ErrorInfo.clear();
+    currentPluginAndInterface.first.clear();
+    currentPluginAndInterface.second.clear();
+    if (pendingFrameList.size())
+        pendingFrameList.clear();
+    clearError();
+    anIf(CanBusWorkerDBDbgEn, anTrk("Object Initialized !"));
+}
+
+void CanBusWorkerDB::dispose()
+{
+    if (currentDev)
+    {
+        delete currentDev;
+        currentDev = Q_NULLPTR;
+    }
+    if (lastFrameTransmitted)
+    {
+        delete lastFrameTransmitted;
+        lastFrameTransmitted = Q_NULLPTR;
+    }
+    anIf(CanBusWorkerDBDbgEn && currentDev, anTrk("Object Cleaned !"));
+}
+
+void CanBusWorkerDB::DeviceErrorOccurred(QCanBusDevice::CanBusError error)
+{
+    setError(CanBusWorkerDB::DeviceError,CanBusWorkerDB::QCanBusErrorMetaEnum.valueToKey(static_cast<int>(error)));
+}
+
+const QMetaEnum CanBusWorkerDB::DataMetaEnum = QMetaEnum::fromType<CanBusWorkerDB::Data>();
 const QMetaEnum CanBusWorkerDB::ErrorMetaEnum = QMetaEnum::fromType<CanBusWorkerDB::Error>();
+const QMetaEnum CanBusWorkerDB::WarningMetaEnum = QMetaEnum::fromType<CanBusWorkerDB::Warning>();
+const QMetaEnum CanBusWorkerDB::NotificationMetaEnum = QMetaEnum::fromType<CanBusWorkerDB::Notification>();
 const QMetaEnum CanBusWorkerDB::QCanBusErrorMetaEnum = QMetaEnum::fromType<QCanBusDevice::CanBusError>();

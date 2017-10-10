@@ -1,6 +1,8 @@
 #ifndef CANBUSWORKER_H
 #define CANBUSWORKER_H
 
+#define CanBusWorkerDbgEn 1
+
 #include <QStateMachine>
 #include "canbusworkerdb.h"
 #include "waitforpluginandinterface.h"
@@ -19,9 +21,9 @@ public:
     explicit CanBusWorker(QObject *parent = 0);
     ~CanBusWorker();
 signals:
-    void Out(QVariant *, QVariant * = Q_NULLPTR);
+    void Out(QVariant, QVariant = QVariant());
 public slots:
-    void In(QVariant * enumVar, QVariant * dataVar = Q_NULLPTR);
+    void In(QVariant enumVar, QVariant dataVar = QVariant());
 private:
     CanBusWorkerDB * currentDB = Q_NULLPTR;
 };

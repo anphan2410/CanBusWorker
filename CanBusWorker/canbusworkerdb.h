@@ -1,6 +1,8 @@
 #ifndef CANBUSWORKERDB_H
 #define CANBUSWORKERDB_H
 
+#define CanBusWorkerDBDbgEn 1
+
 #include <QCoreApplication>
 #include <QObject>
 #include <QVariant>
@@ -18,25 +20,19 @@ class CanBusWorkerDB : public QObject
     Q_OBJECT
 public:
     explicit CanBusWorkerDB(QObject *parent = 0);
-    ~CanBusWorkerDB();    
+    ~CanBusWorkerDB();
 
-    enum DataGet
+    enum Data
     {
-        NoDataGet = 0,
-        requestPluginAndInterface
-    };
-    Q_ENUM(DataGet)
-
-    enum DataSet
-    {
-        NoDataSet = 0,
+        NoData = 0,
         replyCanFrameWithTimeStamp,
         replyPluginAndInterface,
         clearPendingFrameList,
         addAFrameIntoPendingFrameList,
-        setConfigurationParameter
+        setConfigurationParameter,
+        requestPluginAndInterface
     };
-    Q_ENUM(DataSet)
+    Q_ENUM(Data)
 
     enum Error
     {
@@ -62,25 +58,31 @@ public:
     };
     Q_ENUM(Notification)
 
-    typedef QPair<QCanBusFrame*,QString*> CanBusFrameWithTimeStamp;
-    typedef QPair<QString*,QString*> PluginNameAndInterfaceName;
+    typedef QPair<QCanBusFrame,QString> CanBusFrameWithTimeStamp;
+    typedef QPair<QString,QString> PluginNameAndInterfaceName;
 
     void setError(const Error & anErrorType, const QString & anErrorInfo);
     void clearError();
 
-    PluginNameAndInterfaceName * currentPluginAndInterface = Q_NULLPTR;
+    PluginNameAndInterfaceName currentPluginAndInterface;
     QCanBusDevice * currentDev = Q_NULLPTR;
-    Error * ErrorType = Q_NULLPTR;
-    QString * ErrorInfo = Q_NULLPTR;
+    Error ErrorType = NoError;
+    QString ErrorInfo;
     QCanBusFrame * lastFrameTransmitted = Q_NULLPTR;
-    QList<QCanBusFrame*> * pendingFrameList = Q_NULLPTR;
+    QList<QCanBusFrame> pendingFrameList;
 
+    void initialize();
+    void dispose();
+
+    static const QMetaEnum DataMetaEnum;
     static const QMetaEnum ErrorMetaEnum;
+    static const QMetaEnum WarningMetaEnum;
+    static const QMetaEnum NotificationMetaEnum;
     static const QMetaEnum QCanBusErrorMetaEnum;
     static const Qt::ConnectionType uniqueQtConnectionType = static_cast<Qt::ConnectionType>(Qt::AutoConnection | Qt::UniqueConnection);
 
 signals:
-    void Out(QVariant *, QVariant * = Q_NULLPTR);
+    void Out(QVariant , QVariant = QVariant());
     void PluginAndInterfaceChanged();
     void directTransitionRequest(const QString &);
     void ErrorOccurred();
@@ -93,10 +95,7 @@ signals:
     void DeviceStateChanged(QCanBusDevice::CanBusDeviceState);
     void DeviceConfigurationParameterSet();
 public slots:
-    void initialize();
-private:
-    void sweepGarbage();
-    void setDeviceConfigurationParameter();
+    void DeviceErrorOccurred(QCanBusDevice::CanBusError error);
 };
 
 Q_DECLARE_METATYPE(QCanBusFrame)

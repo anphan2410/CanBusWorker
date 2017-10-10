@@ -13,8 +13,16 @@ CanBusWorker::CanBusWorker(QObject *parent) : QStateMachine(parent)
     state2->setObjectName(QStringLiteral("connectDevice"));
     readFrame * state3 = new readFrame(currentDB);
     state3->setObjectName(QStringLiteral("readFrame"));
-    writeFrame * state4 = new writeFrame(currentDB);
+
+    writeFrame * state4 = new writeFrame();
     state4->setObjectName(QStringLiteral("writeFrame"));
+    writeAFrame * state4SubStateWriteAFrame = new writeAFrame(state4,currentDB);
+    QState * state4SubStateDone = new QState(state4);
+    FrameSent * signalFrameSent = new FrameSent(currentDB);
+    signalFrameSent->setTargetState(state4SubStateDone);
+    state4SubStateWriteAFrame->addTransition(signalFrameSent);
+    state4->setInitialState(state4SubStateWriteAFrame);
+
     waitForErrorHandler * state7 = new waitForErrorHandler(currentDB,1000);
     state7->setObjectName(QStringLiteral("waitForErrorHandler"));
 
@@ -31,10 +39,10 @@ CanBusWorker::CanBusWorker(QObject *parent) : QStateMachine(parent)
     state3->addTransition(currentDB, &CanBusWorkerDB::ErrorOccurred, state7);
     state3->addTransition(currentDB, &CanBusWorkerDB::aFrameAdded, state4);
     state3->addTransition(currentDB, &CanBusWorkerDB::FrameReceived, state3);
-    state4->addTransition(currentDB, &CanBusWorkerDB::PluginAndInterfaceChanged, state1);
     state4->addTransition(currentDB, &CanBusWorkerDB::ErrorOccurred, state7);
-    state4->addTransition(currentDB, &CanBusWorkerDB::aFrameAdded, state4);
-    state4->addTransition(currentDB, &CanBusWorkerDB::FrameReceived, state3);
+    state4SubStateDone->addTransition(currentDB, &CanBusWorkerDB::PluginAndInterfaceChanged, state1);
+    state4SubStateDone->addTransition(currentDB, &CanBusWorkerDB::aFrameAdded, state4);
+    state4SubStateDone->addTransition(currentDB, &CanBusWorkerDB::FrameReceived, state3);
     state7->addTransition(currentDB, &CanBusWorkerDB::freshRetry, state0);
     state7->addTransition(currentDB, &CanBusWorkerDB::PluginAndInterfaceChanged, state1);
     state7->addTransition(currentDB, &CanBusWorkerDB::reconnectDevice, state2);

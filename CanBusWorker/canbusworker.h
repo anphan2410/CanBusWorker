@@ -13,6 +13,8 @@
 #include "waitforerrorhandler.h"
 #include "directtransition.h"
 #include "deviceconnected.h"
+#include "writeaframe.h"
+#include "framesent.h"
 
 class CanBusWorker : public QStateMachine
 {

@@ -2,7 +2,7 @@
 
 runningCanBusWorker::runningCanBusWorker(CanBusWorkerBasis *parentBasis, QState *parent) :
     QState(parent),
-    basisPtr(parentBasis)
+    basisptr(parentBasis)
 {
     setObjectName(QStringLiteral("runningCanBusWorker"));
     anIf(CanBusWorkerBasisDbgEn, anAck("runningCanBusWorker Constructed"));
@@ -11,20 +11,21 @@ runningCanBusWorker::runningCanBusWorker(CanBusWorkerBasis *parentBasis, QState 
 void runningCanBusWorker::onEntry(QEvent *)
 {
     anIf(CanBusWorkerBasisDbgEn, anTrk("runningCanBusWorker Entered"));
+    basisptr->currentStateName = objectName();
     qApp->processEvents();
-    basisPtr->executePrioritizedBuffer();
-    if (basisPtr->prioritizedBuffer.size())
+    basisptr->executePrioritizedBuffer();
+    if (basisptr->prioritizedBuffer.size())
     {
-        emit basisPtr->requestDirectTransition(QStringLiteral("runningCanBusWorker"));
+        emit basisptr->requestDirectTransition(QStringLiteral("runningCanBusWorker"));
     }
     else
     {
-        emit basisPtr->requestDirectTransition(QStringLiteral("idleCanBusWorker"));
+        emit basisptr->requestDirectTransition(QStringLiteral("idleCanBusWorker"));
     }
 }
 
 void runningCanBusWorker::onExit(QEvent *)
 {
     anIf(CanBusWorkerBasisDbgEn, anTrk("Leave runningCanBusWorker"));
-    basisPtr->previousStateName = objectName();
+    basisptr->previousStateName = objectName();
 }

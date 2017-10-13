@@ -12,7 +12,7 @@ protected:
     void onEntry(QEvent *) override;
     void onExit(QEvent *) override;
 private:
-    CanBusWorkerBasis * basisPtr = nullptr;
+    CanBusWorkerBasis * basisptr = nullptr;
     QTimer timer;
 };
 

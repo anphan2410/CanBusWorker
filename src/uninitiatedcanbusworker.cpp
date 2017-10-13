@@ -11,6 +11,7 @@ uninitiatedCanBusWorker::uninitiatedCanBusWorker(CanBusWorkerBasis *parentBasis,
 void uninitiatedCanBusWorker::onEntry(QEvent *)
 {
     anIf(CanBusWorkerBasisDbgEn, anTrk("uninitiatedCanBusWorker Entered"));
+    basisptr->currentStateName = objectName();
     qApp->processEvents();
     if (!(basisptr->isInitiated))
     {

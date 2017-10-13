@@ -130,7 +130,7 @@ void CanBusWorkerBasis::executePrioritizedBuffer()
             }
             case clearBuffer:
             {
-                anIf(CanBusWorkerBasisDbgEn, anAck("clearBuffer"));
+                anIf(CanBusWorkerBasisDbgEn, anWarn("clearBuffer"));
                 clearPrioritizedBuffer();
                 break;
             }

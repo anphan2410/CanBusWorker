@@ -2,7 +2,7 @@
 
 writeFrameCanBusWorker::writeFrameCanBusWorker(CanBusWorkerBasis *parentBasis, QState *parent) :
     QState(parent),
-    basisPtr(parentBasis)
+    basisptr(parentBasis)
 {
     setObjectName(QStringLiteral("writeFrameCanBusWorker"));
     timer.setParent(this);
@@ -17,8 +17,9 @@ writeFrameCanBusWorker::writeFrameCanBusWorker(CanBusWorkerBasis *parentBasis, Q
 void writeFrameCanBusWorker::onEntry(QEvent *)
 {
     anIf(CanBusWorkerBasisDbgEn, anTrk("writeFrameCanBusWorker Entered"));
+    basisptr->currentStateName = objectName();
     qApp->processEvents();
-    basisPtr->currentDev->writeFrame(basisPtr->lastFrameWritten);
+    basisptr->currentDev->writeFrame(basisptr->lastFrameWritten);
     timer.start();
 }
 
@@ -26,4 +27,5 @@ void writeFrameCanBusWorker::onExit(QEvent *)
 {
     anIf(CanBusWorkerBasisDbgEn, anTrk("Leave writeFrameCanBusWorker"));
     timer.stop();
+    basisptr->previousStateName = objectName();
 }

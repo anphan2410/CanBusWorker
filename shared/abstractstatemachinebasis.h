@@ -19,6 +19,7 @@ public:
     explicit AbstractStateMachineBasis(QObject *parent = nullptr);
 
     QMap<qint16,QList<GlobalSignal>> prioritizedBuffer;
+    QString currentStateName;
     QString previousStateName;
     bool isInitiated = false;
 

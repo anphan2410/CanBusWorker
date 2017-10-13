@@ -12,7 +12,7 @@ void uninitiatedCanBusWorker::onEntry(QEvent *)
 {
     anIf(CanBusWorkerBasisDbgEn, anTrk("uninitiatedCanBusWorker Entered"));
     qApp->processEvents();
-    if (basisptr->previousStateName.isEmpty() && !(basisptr->currentDev))
+    if (!(basisptr->isInitiated))
     {
         basisptr->initialize();
     }

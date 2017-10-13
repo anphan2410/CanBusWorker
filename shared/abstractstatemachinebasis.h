@@ -20,6 +20,7 @@ public:
 
     QMap<qint16,QList<GlobalSignal>> prioritizedBuffer;
     QString previousStateName;
+    bool isInitiated = false;
 
     void addAGlobalSignal(const GlobalSignal &aGlobalSignal);
     void deleteEmptyListsFromPrioritizedBuffer();

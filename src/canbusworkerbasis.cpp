@@ -47,6 +47,7 @@ void CanBusWorkerBasis::initialize()
         if (currentDev->connectDevice())
         {
             anIf(CanBusWorkerBasisDbgEn, anAck("Device Is Ready !"));
+            isInitiated = true;
             emit isInitialized();
         }
         else
@@ -65,7 +66,7 @@ void CanBusWorkerBasis::initialize()
 
 void CanBusWorkerBasis::dispose()
 {
-    anIf(CanBusWorkerBasisDbgEn && currentDev, anAck("Clean CanBusWorkerBasis !"));
+    anIf(CanBusWorkerBasisDbgEn && isInitiated, anAck("Clean CanBusWorkerBasis !"));
     previousStateName.clear();
     clearPrioritizedBuffer();
     clearError();
@@ -75,6 +76,7 @@ void CanBusWorkerBasis::dispose()
         delete currentDev;
         currentDev = nullptr;
     }
+    isInitiated = false;
 }
 
 void CanBusWorkerBasis::clearCache()

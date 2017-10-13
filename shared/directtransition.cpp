@@ -1,9 +1,9 @@
 #include "directtransition.h"
 
-directTransition::directTransition(CanBusWorkerDB *database, QAbstractState *destinationState) :
-    QSignalTransition(database, &CanBusWorkerDB::directTransitionRequest)
+directTransition::directTransition(const QObject *aSender, const char *aSignal, QAbstractState *aTarget) :
+    QSignalTransition(aSender,aSignal)
 {
-    this->setTargetState(destinationState);
+    this->setTargetState(aTarget);
 }
 
 bool directTransition::eventTest(QEvent *e)
@@ -13,4 +13,3 @@ bool directTransition::eventTest(QEvent *e)
     QStateMachine::SignalEvent * se = static_cast<QStateMachine::SignalEvent *>(e);
     return (se->arguments().at(0).toString() == this->targetState()->objectName());
 }
-

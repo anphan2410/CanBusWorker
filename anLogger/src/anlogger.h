@@ -13,7 +13,7 @@
 //If _anLoggerSafeModeForWindowsEnabled Is Set,
 //Then Logger Message Text Attribute Is Disabled
 //In Return For Thread-Safe Operation
-#define _anLoggerSafeModeForWindowsEnabled 0
+#define _anLoggerSafeModeForWindowsEnabled 1
 //_anLoggerVividModeForLinuxEnabled is only used for linux
 //If _anLoggerVividModeForLinuxEnabled Is Set,
 //Then Logger Message Text Becomes Bold And Brighter
@@ -44,10 +44,14 @@
     #include <windows.h>
     #define __anWINOS__
 #elif defined linux || defined _linux_ || defined __linux || defined __linux__\
-        || defined __gnu_linux__
+        || defined __gnu_linux__\
+        || defined __APPLE__\
+        || defined Q_OS_OSX  || defined Q_OS_MACOS || defined Q_OS_MAC
     #define __anLINUXOS__
 #endif
-#ifdef QT_CORE_LIB
+#if defined QT_CORE_LIB\
+        || defined QT_VERSION\
+        || defined Q_OS_OSX  || defined Q_OS_MACOS || defined Q_OS_MAC
     #include <QtGlobal>
     #include <QDebug>
     #include <QVariant>
@@ -59,7 +63,7 @@
 #endif
 /********************************************************************************/
 
-static char anStdErrBuffer[BUFSIZ];
+extern char anStdErrBuffer[BUFSIZ];
 
 #define anTxtAttribType unsigned short
 
@@ -84,7 +88,7 @@ static char anStdErrBuffer[BUFSIZ];
     #define anForegroundWhite 0b00001111
     #define anDefaultTextAttribute 0b00000111
 
-    inline static bool anGetCurrentConsoleTextAttribute(anTxtAttribType &OutputVar) {
+    inline bool anGetCurrentConsoleTextAttribute(anTxtAttribType &OutputVar) {
         CONSOLE_SCREEN_BUFFER_INFO tmp;
         if (GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &tmp))
         {
@@ -113,7 +117,7 @@ static char anStdErrBuffer[BUFSIZ];
     #define anForegroundWhite 37
     #define anDefaultTextAttribute 0
 
-    inline static bool anGetCurrentConsoleTextAttribute(anTxtAttribType &OutputVar) {
+    inline bool anGetCurrentConsoleTextAttribute(anTxtAttribType &OutputVar) {
         std::string tmpBuff = std::string(anStdErrBuffer);
         std::size_t tmp = tmpBuff.find_last_of(u8"\033[");
         if (tmp != std::string::npos)
@@ -138,7 +142,7 @@ static char anStdErrBuffer[BUFSIZ];
     #define _anGetConsoleTextAttribute(destination)\
         anGetCurrentConsoleTextAttribute(destination)
 
-    inline static const std::string anSetConsoleTextAttributePrefixString(anTxtAttribType TxtAttrib) {
+    inline const std::string anSetConsoleTextAttributePrefixString(anTxtAttribType TxtAttrib) {
         if (TxtAttrib)
         {
             std::string tmp = u8"\033[";
@@ -169,7 +173,7 @@ static char anStdErrBuffer[BUFSIZ];
     #endif
 
     #if _anFilePositionEnabled
-        inline static const std::string anGetCurrentFileName(const std::string &currentFilePath) {
+        inline const std::string anGetCurrentFileName(const std::string &currentFilePath) {
             return currentFilePath.substr(
                         currentFilePath.find_last_of(__anFilePathSlashChar__)+1);
         }
@@ -177,18 +181,17 @@ static char anStdErrBuffer[BUFSIZ];
     #endif
 
     #if _anTimePositionEnabled
-        #define __anElapsedTimeNSEC__\
-            std::chrono::duration_cast<std::chrono::nanoseconds>(\
-                std::chrono::steady_clock::now() - __anStartTimePoint__).count()
+        using stdChronoDurationInNanoSec = std::chrono::duration<float,std::nano>;
+        #define __anElapsedTimeNSEC__ stdChronoDurationInNanoSec(std::chrono::steady_clock::now() - __anStartTimePoint__).count()
     #endif
 
-    inline static const std::string anCurrentMessagePath(
+    inline const std::string anCurrentMessagePath(
             #if _anTimePositionEnabled
                 #if _anFunctionPositionEnabled || _anFilePositionEnabled\
                     || _anLinePositionEnabled || _anThreadIdPositionEnabled
-                    const unsigned long int &currentElapsedTime,
+                    const float &currentElapsedTime,
                 #else
-                    const unsigned long int &currentElapsedTime
+                    const float &currentElapsedTime
                 #endif
             #endif
             #if _anThreadIdPositionEnabled
@@ -313,7 +316,7 @@ static char anStdErrBuffer[BUFSIZ];
                 QTextStream(tmpQStrrBefore##newMsgStrVar, QIODevice::ReadWrite) << msgIn;\
                 newMsgStrVar = tmpQStrrBefore##newMsgStrVar->toStdString();\
                 delete tmpQStrrBefore##newMsgStrVar;\
-                tmpQStrrBefore##newMsgStrVar = NULL;\
+                tmpQStrrBefore##newMsgStrVar = Q_NULLPTR;\
             }
 #else
     #define anTmpSaveMsgInputToAStdStrVar(msgIn,newMsgStrVar)\
@@ -353,7 +356,7 @@ static char anStdErrBuffer[BUFSIZ];
         std::string anTmpCurrentMessagePathStrVar = __anMessagePath__
 #endif
 
-inline static void anTmpNoLineMessageLogger(
+inline void anTmpNoLineMessageLogger(
                                     #if defined anTmpCurrentMessagePathStrVar\
                                             || defined anTmpOutputMsgStrVar
                                           const std::string &aNoLineMessage,
@@ -439,7 +442,7 @@ inline static void anTmpNoLineMessageLogger(
                              anTmpMsgPathParamForNoLineMacro(msgPath)\
                              anTmpPrevTxtAtribVarParamForNoLineMacro(preTxtAtt))
 
-inline static void anTmpMessageLogger(
+inline void anTmpMessageLogger(
                                 #if defined anTmpPrevTxtAtribVar\
                                         || defined anTmpCurrentMessagePathStrVar\
                                         || defined anTmpOutputMsgStrVar
@@ -586,17 +589,9 @@ inline static void anTmpMessageLogger(
 #endif
 
 /********************************************************************************/
-static const anTxtAttribType anOriginalConsoleTextAttribute = [](){
-    anTxtAttribType tmp = anDefaultTextAttribute;
-    _anGetConsoleTextAttribute(tmp);
-    return tmp;
-}();
+extern const anTxtAttribType &anOriginalConsoleTextAttribute;
 #define __anOriginalConsoleTextAttribute__ anOriginalConsoleTextAttribute
-static const std::chrono::steady_clock::time_point anThisProgramStartingTimePoint = [](){
-    setvbuf(stderr, anStdErrBuffer, _IOFBF, BUFSIZ);
-    (void) anOriginalConsoleTextAttribute;
-    return std::chrono::steady_clock::now();
-}();
+extern const std::chrono::steady_clock::time_point &anThisProgramStartingTimePoint;
 #define __anStartTimePoint__ anThisProgramStartingTimePoint
 /********************************************************************************/
 #endif // ANLOGGER_H

@@ -1,15 +1,13 @@
 #ifndef DIRECTTRANSITION_H
 #define DIRECTTRANSITION_H
 
-#include <QSignalTransition>
-#include <QAbstractState>
 #include <QStateMachine>
-#include "canbusworkerdb.h"
+#include <QSignalTransition>
 
 class directTransition : public QSignalTransition
 {
 public:
-    directTransition(CanBusWorkerDB * database, QAbstractState * destinationState);
+    directTransition(const QObject *aSender, const char *aSignal, QAbstractState *aTarget);
 protected:
     bool eventTest(QEvent *e) override;
 };

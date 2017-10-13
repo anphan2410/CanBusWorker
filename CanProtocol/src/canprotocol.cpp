@@ -6,13 +6,18 @@ CanProtocol::CanProtocol()
            anTrk("Object Constructed"));
 }
 
-CanProtocol::CanProtocol(quint8 identifier, const QByteArray &data)
+CanProtocol::CanProtocol(const quint8 &identifier, const QByteArray &data)
     :QCanBusFrame(identifier,data)
 {
-    anIf(CanPtcDbgEn,
-           anTrk("Object Constructed")
-           anInfo("Id/hex="<<QByteArray::number(frameId(),16))
-           anInfo("Data/hex="<<payload().toHex()));
+    //This part of code causes segmentation fault on Windows,
+    //but run fine on pi.
+    //Reason is unidentified.
+    #ifndef __anWINOS__
+        anIf(CanPtcDbgEn,
+               anTrk("Object Constructed")
+               anInfo("Id/hex="<<QByteArray::number(frameId(),16))
+               anInfo("Data/hex="<<payload().toHex()));
+    #endif
 }
 
 CanProtocol::CanProtocol(const QCanBusFrame &CanMsg)
@@ -45,48 +50,45 @@ bool CanProtocol::IsOfRightFormat() const
     return false;
 }
 
-CanProtocol &CanProtocol::setSdcsId(const quint8 sdcsid)
+CanProtocol &CanProtocol::setSdcsId(const quint8 &sdcsid)
 {
     setFrameId((frameId()&0x0f)|(sdcsid<<4));
     anIf(CanPtcDbgEn,
-           anTrk("Property Changed")
-           anInfo("Id/hex="<<QByteArray::number(frameId(),16)));
+           anInfo("NEW Id/hex="<<QByteArray::number(frameId(),16)));
     return *this;
 }
 
-CanProtocol &CanProtocol::setChId(const quint8 chid)
+CanProtocol &CanProtocol::setChId(const quint8 &chid)
 {
     setFrameId((frameId()&0xf0)|chid);
     anIf(CanPtcDbgEn,
-           anTrk("Property Changed")
-           anInfo("Id/hex="<<QByteArray::number(frameId(),16)));
+           anInfo("NEW Id/hex="<<QByteArray::number(frameId(),16)));
     return *this;
 }
 
 CanProtocol &CanProtocol::setRFID(const QByteArray &rfid)
 {
-    QByteArray QBArrTmp( 5-rfid.size(), '\0');
+    QByteArray QBArrTmp(4-rfid.size(), '\0');
     QBArrTmp << rfid;
     quint8 QInt8Tmp = payload().size();
     if (QInt8Tmp >= 8)
-        setPayload(payload().replace(QInt8Tmp-8,5,QBArrTmp));
+        setPayload(payload().replace(QInt8Tmp-8,4,QBArrTmp));
     else
     {
-        if (QInt8Tmp >= 4)
+        if (QInt8Tmp >= 5)
         {
-            setPayload(payload().remove(0,QInt8Tmp-3));
-            if (QInt8Tmp < 6)
+            setPayload(payload().remove(0,QInt8Tmp-4));
+            if (QInt8Tmp < 5)
                 setPayload(QByteArray(payload().size(),'\0'));
         }
         setPayload(payload().prepend(QBArrTmp));
     }
     anIf(CanPtcDbgEn,
-           anTrk("Property Changed")
-           anInfo("Data/hex="<<payload().toHex()));
+           anInfo("NEW Data/hex="<<payload().toHex()));
     return *this;
 }
 
-CanProtocol &CanProtocol::setValveControl(const bool SetBit, const bool ResetBit)
+CanProtocol &CanProtocol::setValveControl(const bool &SetBit, const bool &ResetBit)
 {
     quint8 QInt8Tmp = payload().size()-1;
     quint8 AByte = payload().at(QInt8Tmp);
@@ -100,8 +102,7 @@ CanProtocol &CanProtocol::setValveControl(const bool SetBit, const bool ResetBit
         AByte&=0xfe;
     setPayload(payload().remove(QInt8Tmp,1)<<AByte);
     anIf(CanPtcDbgEn,
-           anTrk("Property Changed")
-           anInfo("Data/hex="<<payload().toHex()));
+           anInfo("NEW Data/hex="<<payload().toHex()));
     return *this;
 }
 
@@ -125,6 +126,20 @@ CanProtocol &CanProtocol::makePresenceResponse()
 {
     this->setChId(15).setPayload(".");
     return *this;
+}
+
+const CanProtocol CanProtocol::getDataRequest()
+{
+    CanProtocol tmpReturn=*this;
+    tmpReturn.makeDataRequest();
+    return tmpReturn;
+}
+
+const CanProtocol CanProtocol::getPresenceResponse()
+{
+    CanProtocol tmpReturn=*this;
+    tmpReturn.makePresenceResponse();
+    return tmpReturn;
 }
 
 const QCanBusFrame &CanProtocol::getMsg() const
@@ -201,9 +216,9 @@ const QByteArray CanProtocol::getRFID() const
 {
     quint8 QInt8Tmp = payload().size();
     if (QInt8Tmp>=8)
-        return payload().mid(QInt8Tmp-8,5);
+        return payload().mid(QInt8Tmp-8,4);
     else
-        return "@#$%&";
+        return QByteArray(4,'\0');
 }
 
 quint8 CanProtocol::getValveControl() const
@@ -216,16 +231,26 @@ quint8 CanProtocol::getValveStatus() const
     return (payload().at(payload().size()-1)&0x0c)>>2;
 }
 
-const CanProtocol &CanProtocol::DataRequest(const quint8 sdcsid)
+bool CanProtocol::getValveControlSetBit() const
 {
-    CanProtocol * tmpReturn = new CanProtocol();
-    return tmpReturn->setSdcsId(sdcsid).makeDataRequest();
+    return payload().at(payload().size()-1)&0x01;
 }
 
-const CanProtocol &CanProtocol::PresenceResponse(const quint8 sdcsid)
+bool CanProtocol::getValveControlResetBit() const
 {
-    CanProtocol * tmpReturn = new CanProtocol();
-    return tmpReturn->setSdcsId(sdcsid).makePresenceResponse();
+    return payload().at(payload().size()-1)&0x02;
 }
 
-const CanProtocol CanProtocol::PresenceRequest = CanProtocol(0xf0,".");
+const CanProtocol &CanProtocol::PresenceRequest = CanProtocol(0xf0,".");
+
+const CanProtocol CanProtocol::DataRequest(const quint8 &sdcsid)
+{
+    CanProtocol tmpReturn;
+    return tmpReturn.setSdcsId(sdcsid).makeDataRequest();
+}
+
+const CanProtocol CanProtocol::PresenceResponse(const quint8 &sdcsid)
+{
+    CanProtocol tmpReturn;
+    return tmpReturn.setSdcsId(sdcsid).makePresenceResponse();
+}

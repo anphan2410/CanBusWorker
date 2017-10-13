@@ -51,7 +51,7 @@ p, li { white-space: pre-wrap; }
     <property name="geometry">
      <rect>
       <x>380</x>
-      <y>290</y>
+      <y>280</y>
       <width>75</width>
       <height>23</height>
      </rect>
@@ -60,17 +60,17 @@ p, li { white-space: pre-wrap; }
      <string>Start</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="pushButton_clearPendingFrameList">
+   <widget class="QPushButton" name="pushButton_clearBuffer">
     <property name="geometry">
      <rect>
       <x>350</x>
-      <y>350</y>
+      <y>342</y>
       <width>131</width>
-      <height>23</height>
+      <height>31</height>
      </rect>
     </property>
     <property name="text">
-     <string>Clear pendingFrameList</string>
+     <string>Clear Buffer</string>
     </property>
    </widget>
    <widget class="QPushButton" name="pushButton_SendARandomMessage">
@@ -83,14 +83,14 @@ p, li { white-space: pre-wrap; }
      </rect>
     </property>
     <property name="text">
-     <string>Send A Random</string>
+     <string>Send Random</string>
     </property>
    </widget>
    <widget class="QPushButton" name="pushButton_Stop">
     <property name="geometry">
      <rect>
       <x>380</x>
-      <y>320</y>
+      <y>310</y>
       <width>75</width>
       <height>23</height>
      </rect>
@@ -99,13 +99,13 @@ p, li { white-space: pre-wrap; }
      <string>Stop</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="pushButton">
+   <widget class="QPushButton" name="pushButtonQUIT">
     <property name="geometry">
      <rect>
       <x>400</x>
       <y>10</y>
       <width>31</width>
-      <height>23</height>
+      <height>31</height>
      </rect>
     </property>
     <property name="text">

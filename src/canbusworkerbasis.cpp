@@ -160,12 +160,6 @@ void CanBusWorkerBasis::executePrioritizedBuffer()
                 collectFramesReceived();
                 break;
             }
-            case FrameWritten:
-            {
-                anIf(CanBusWorkerBasisDbgEn, anAck("FrameWritten"));
-                emit Out(currentGlobalSignal);
-                break;
-            }
             default:
                 break;
             }

@@ -11,11 +11,11 @@ void FrameIsWritten::onTransition(QEvent *)
 {
     if (basisptr->lastFrameWritten.frameId() != 0 || basisptr->lastFrameWritten.payload().size())
     {
-        GlobalSignal pendingNotificationFrameWritten;
-        pendingNotificationFrameWritten.Type = QVariant::fromValue(CanBusWorkerBasis::FrameWritten);
-        pendingNotificationFrameWritten.Data = QVariant::fromValue(basisptr->lastFrameWritten);
-        pendingNotificationFrameWritten.TimeStamp = NOW2String;
-        pendingNotificationFrameWritten.DstStrs.append(SmallCoordinatorObjName);
+        GlobalSignal notifyFrameWritten;
+        notifyFrameWritten.Type = QVariant::fromValue(CanBusWorkerBasis::FrameWritten);
+        notifyFrameWritten.Data = QVariant::fromValue(basisptr->lastFrameWritten);
+        notifyFrameWritten.TimeStamp = NOW2String;
+        notifyFrameWritten.DstStrs.append(SmallCoordinatorObjName);
         anIf(CanBusWorkerBasisDbgEn, anAck("Frame Written !");
         #if QT_VERSION >= QT_VERSION_CHECK(5,8,0)
                 anInfo(basisptr->lastFrameWritten.toString());
@@ -24,7 +24,7 @@ void FrameIsWritten::onTransition(QEvent *)
                          + " | " + basisptr->lastFrameWritten.payload().toHex());
         #endif
         );
-        basisptr->addAGlobalSignal(pendingNotificationFrameWritten);
+        emit basisptr->Out(notifyFrameWritten);
         basisptr->isCurrentRunningCycleCompleted = true;
     }
 }

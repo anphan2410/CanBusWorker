@@ -21,13 +21,6 @@ MainWindow::MainWindow(QWidget *parent) :
                      this, &MainWindow::In,
                      uniqueQtConnectionType);
 
-    QObject::connect(ui->pushButton_Start, &QPushButton::clicked,
-                     currentCanBusWorker, &CanBusWorker::start,
-                     uniqueQtConnectionType);
-    QObject::connect(ui->pushButton_Stop, &QPushButton::clicked,
-                     currentCanBusWorker, &CanBusWorker::stop,
-                     uniqueQtConnectionType);
-
     aNewThread->start();
 }
 

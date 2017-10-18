@@ -25,5 +25,6 @@ void FrameIsWritten::onTransition(QEvent *)
         #endif
         );
         basisptr->addAGlobalSignal(pendingNotificationFrameWritten);
+        basisptr->isCurrentRunningCycleCompleted = true;
     }
 }

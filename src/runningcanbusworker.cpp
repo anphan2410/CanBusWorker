@@ -14,13 +14,16 @@ void runningCanBusWorker::onEntry(QEvent *)
     basisptr->currentStateName = objectName();
     qApp->processEvents();
     basisptr->executePrioritizedBuffer();
-    if (basisptr->prioritizedBuffer.size())
+    if (basisptr->isCurrentRunningCycleCompleted)
     {
-        emit basisptr->requestDirectTransition(QStringLiteral("runningCanBusWorker"));
-    }
-    else
-    {
-        emit basisptr->requestDirectTransition(QStringLiteral("idleCanBusWorker"));
+        if (basisptr->prioritizedBuffer.isEmpty())
+        {
+            emit basisptr->goToState1();
+        }
+        else
+        {
+            emit basisptr->goToState2();
+        }
     }
 }
 

@@ -80,6 +80,12 @@ inline QByteArray IntStr2QBArr0Pad(const quint32 Num, const quint8 SizeInByte)
 ///
 ///\brief GlobalSignal
 ///
+typedef qint16 TypeOfGlobalSignalContentPriority;
+typedef qint16 TypeOfGlobalSignalPriority;
+extern const TypeOfGlobalSignalContentPriority maxGlobalSignalContentPriority;
+extern const TypeOfGlobalSignalContentPriority minGlobalSignalContentPriority;
+extern const TypeOfGlobalSignalPriority maxGlobalSignalPriority;
+extern const TypeOfGlobalSignalPriority minGlobalSignalPriority;
 typedef struct
 {
     QVariant Type;
@@ -87,8 +93,8 @@ typedef struct
     QString TimeStamp;
     QString Key = QStringLiteral("NULL");
     QList<QString> DstStrs;
-    qint16 Priority = 0;
-    qint16 SignalPriority = 0;
+    TypeOfGlobalSignalContentPriority Priority = 0;
+    TypeOfGlobalSignalPriority SignalPriority = 0;
 } GlobalSignal;
 Q_DECLARE_METATYPE(GlobalSignal)
 

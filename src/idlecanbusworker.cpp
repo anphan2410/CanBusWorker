@@ -15,13 +15,8 @@ void idleCanBusWorker::onEntry(QEvent *)
     qApp->processEvents();
     if (basisptr->previousStateName == QStringLiteral("uninitiatedCanBusWorker"))
     {
-        GlobalSignal iamReady;
-        iamReady.Type = QVariant::fromValue(CanBusWorkerBasis::readyToWork);
-        iamReady.Data = QVariant::fromValue(machine()->objectName());
-        iamReady.TimeStamp = NOW2String;
-        iamReady.DstStrs.append(SmallCoordinatorObjName);
-        iamReady.SignalPriority = 200;
-        basisptr->addAGlobalSignal(iamReady);
+        basisptr->queueNotificationReadyToWork();
+        emit basisptr->goToState2();
     }
 }
 

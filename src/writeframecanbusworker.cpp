@@ -9,6 +9,7 @@ writeFrameCanBusWorker::writeFrameCanBusWorker(CanBusWorkerBasis *parentBasis, Q
     timer.setInterval(3000);
     timer.setSingleShot(true);
     QObject::connect(&timer, &QTimer::timeout, this, [parentBasis](){
+        parentBasis->isCurrentRunningCycleCompleted = true;
         parentBasis->setError(CanBusWorkerBasis::FrameWrittenTimedOut,QStringLiteral(""));
     });
     anIf(CanBusWorkerBasisDbgEn, anAck("writeFrameCanBusWorker Constructed"));

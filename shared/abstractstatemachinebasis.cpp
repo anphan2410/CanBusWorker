@@ -16,11 +16,6 @@ void AbstractStateMachineBasis::addAGlobalSignal(const GlobalSignal &aGlobalSign
         prioritizedBuffer.insert(aGlobalSignal.Priority, QList<GlobalSignal>({aGlobalSignal}));
     }
     deleteEmptyListsFromPrioritizedBuffer();
-    if ((prioritizedBuffer.size() == 1) && (prioritizedBuffer.first().size() == 1))
-    {
-        emit prioritizedBufferRefilled();
-    }
-    emit aGlobalSignalAdded();
 }
 
 void AbstractStateMachineBasis::deleteEmptyListsFromPrioritizedBuffer()

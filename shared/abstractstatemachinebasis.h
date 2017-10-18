@@ -7,6 +7,7 @@
 #include <QState>
 #include <QStateMachine>
 #include <QMap>
+#include <QList>
 #include <QMetaType>
 #include <QMetaEnum>
 #include "commonthings.h"
@@ -19,20 +20,22 @@ public:
     explicit AbstractStateMachineBasis(QObject *parent = nullptr);
 
     QMap<qint16,QList<GlobalSignal>> prioritizedBuffer;
+    GlobalSignal currentGlobalSignal;
     QString currentStateName;
     QString previousStateName;
     bool isInitiated = false;
+    bool isCurrentRunningCycleCompleted = false;
 
     void addAGlobalSignal(const GlobalSignal &aGlobalSignal);
     void deleteEmptyListsFromPrioritizedBuffer();
     void clearPrioritizedBuffer();
 signals:
     void Out(const GlobalSignal &);
-    void isInitialized();
     void requestDirectTransition(const QString &);
-    void prioritizedBufferRefilled();
-    void aGlobalSignalAdded();
     void ErrorOccurred();
+    void goToState0();//uninitiated
+    void goToState1();//idle
+    void goToState2();//running
 };
 
 #endif // ABSTRACTSTATEMACHINEBASIS_H

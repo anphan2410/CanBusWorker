@@ -60,7 +60,6 @@ public:
     QString ErrorInfo;
 
     //Cache
-    GlobalSignal currentGlobalSignal;
     QCanBusFrame lastFrameWritten;
 
     void initialize();
@@ -71,8 +70,8 @@ public:
     void executePrioritizedBuffer();
     void collectFramesReceived();
     void emitErrorGlobalSignal();
+    void queueNotificationReadyToWork();
 signals:
-    void FramesReceived();
     void FramesWritten();
     void writingFrame();
 public slots:

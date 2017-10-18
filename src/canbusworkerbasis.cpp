@@ -41,6 +41,10 @@ void CanBusWorkerBasis::initialize()
             GlobalSignal queueFramesRead;
             queueFramesRead.Type = QVariant::fromValue(FrameReceived);
             addAGlobalSignal(queueFramesRead);
+            if (currentStateName == QStringLiteral("idleCanBusWorker"))
+            {
+                emit goToState2();
+            }
         });
         QObject::connect(currentDev, &QCanBusDevice::framesWritten, this, &CanBusWorkerBasis::FramesWritten,
                          uniqueQtConnectionType);

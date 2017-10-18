@@ -133,5 +133,5 @@ void MainWindow::on_pushButton_clearBuffer_clicked()
 {
     GlobalSignal aBufferClear;
     aBufferClear.Type = QVariant::fromValue(CanBusWorkerBasis::clearBuffer);
-    Out(aBufferClear);
+    emit Out(aBufferClear);
 }

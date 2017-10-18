@@ -125,7 +125,7 @@ void CanBusWorkerBasis::executePrioritizedBuffer()
             case replyFrameWithTimeStamp:
             {
                 anIf(CanBusWorkerBasisDbgEn, anAck("replyFrameWithTimeStamp"));
-                emit Out(currentGlobalSignal);
+                emit Out(GlobalSignal(currentGlobalSignal));
                 break;
             }
             case requestFrameTransmission:
@@ -151,7 +151,7 @@ void CanBusWorkerBasis::executePrioritizedBuffer()
             case readyToWork:
             {
                 anIf(CanBusWorkerBasisDbgEn, anAck("readyToWork"));
-                emit Out(currentGlobalSignal);
+                emit Out(GlobalSignal(currentGlobalSignal));
                 break;
             }
             case FrameReceived:

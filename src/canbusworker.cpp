@@ -12,10 +12,10 @@ CanBusWorker::CanBusWorker(QObject *parent) : QStateMachine(parent)
     runningCanBusWorker *state2 = new runningCanBusWorker(currentBasis,main);
     writeFrameCanBusWorker *state3 = new writeFrameCanBusWorker(currentBasis,main);
 
-    state0->addTransition(currentBasis, &CanBusWorkerBasis::goToState1, state1);
-    state1->addTransition(currentBasis, &CanBusWorkerBasis::goToState2, state2);
-    state2->addTransition(currentBasis, &CanBusWorkerBasis::goToState1, state1);
-    state2->addTransition(currentBasis, &CanBusWorkerBasis::goToState2, state2);
+    state0->addTransition(currentBasis, &CanBusWorkerBasis::goIdle, state1);
+    state1->addTransition(currentBasis, &CanBusWorkerBasis::GlobalSignalExecutionRequested, state2);
+    state2->addTransition(currentBasis, &CanBusWorkerBasis::goIdle, state1);
+    state2->addTransition(currentBasis, &CanBusWorkerBasis::GlobalSignalExecutionRequested, state2);
     state2->addTransition(currentBasis, &CanBusWorkerBasis::writingFrame, state3);
     state3->addTransition(new FrameIsWritten(currentBasis,state2));
 

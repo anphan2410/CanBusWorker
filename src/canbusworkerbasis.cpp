@@ -11,113 +11,39 @@ CanBusWorkerBasis::CanBusWorkerBasis(QObject *parent) : AbstractStateMachineBasi
 
 CanBusWorkerBasis::~CanBusWorkerBasis()
 {
-    dispose();
-    anIf(CanBusWorkerBasisDbgEn, anWarn("CanBusWorkerBasis Destroyed !"));
+    anIf(CanBusWorkerBasisDbgEn, anWarn("Destroy CanBusWorkerBasis"));
+    dispose();    
 }
 
-void CanBusWorkerBasis::initialize()
+void CanBusWorkerBasis::uninitiatedCanBusWorkerOnEntry()
 {
-    dispose();
-    QString * DeviceCreationErrorString = nullptr;
-#if QT_VERSION >= QT_VERSION_CHECK(5,8,0)
-    currentDev = QCanBus::instance()->createDevice(QStringLiteral("socketcan"),
-                                                          QStringLiteral("can0"),
-                                                          DeviceCreationErrorString);
-#else
-    currentDev = QCanBus::instance()->createDevice(QByteArray("socketcan"),
-                                                          QStringLiteral("can0"));
-#endif
-    if (currentDev)
+    if (!isInitiated)
     {
-        anIf(CanBusWorkerBasisDbgEn,
-            anAck("Device Created !");
-            QObject::connect(currentDev, &QCanBusDevice::stateChanged, this, [&](QCanBusDevice::CanBusDeviceState devState){
-                anAck("Device State Changed To " << QCanBusDeviceStateMetaEnum.valueToKey(static_cast<int>(devState)));
-            });)
-        QObject::connect(currentDev, &QCanBusDevice::errorOccurred, this, [&](QCanBusDevice::CanBusError devError){
-            setError(DeviceError,QCanBusErrorMetaEnum.valueToKey(static_cast<int>(devError)));
-        });
-        QObject::connect(currentDev, &QCanBusDevice::framesReceived, this, [&](){
-            GlobalSignal queueFramesRead;
-            queueFramesRead.Type = QVariant::fromValue(FrameReceived);
-            addAGlobalSignal(queueFramesRead);
-            if (currentStateName == QStringLiteral("idleCanBusWorker"))
-            {
-                emit goToState2();
-            }
-        });
-        QObject::connect(currentDev, &QCanBusDevice::framesWritten, this, &CanBusWorkerBasis::FramesWritten,
-                         uniqueQtConnectionType);
-        if (currentDev->connectDevice())
-        {
-            anIf(CanBusWorkerBasisDbgEn, anAck("Device Is Ready !"));
-            isInitiated = true;
-            emit goToState1();
-        }
-        else
-        {
-            anIf(CanBusWorkerBasisDbgEn, anError("Failed To Connect Device !"));
-        }
-    }
-    else
-    {
-        setError(DeviceCreationFailed,DeviceCreationErrorString?*DeviceCreationErrorString:QStringLiteral());
-    }
-    delete DeviceCreationErrorString;
-    DeviceCreationErrorString = nullptr;
-    anIf(CanBusWorkerBasisDbgEn && isInitiated, anAck("CanBusWorkerBasis Initialized !"));
-}
-
-void CanBusWorkerBasis::dispose()
-{
-    anIf(CanBusWorkerBasisDbgEn && isInitiated, anWarn("Clean CanBusWorkerBasis !"));
-    currentStateName.clear();
-    previousStateName.clear();
-    clearPrioritizedBuffer();
-    clearCache();
-    clearError();
-    if (currentDev)
-    {
-        currentDev->disconnectDevice();
-        delete currentDev;
-        currentDev = nullptr;
-    }
-    isInitiated = false;
-}
-
-void CanBusWorkerBasis::clearCache()
-{
-    currentGlobalSignal = GlobalSignal();
-    lastFrameWritten.setFrameId(0);
-    lastFrameWritten.setPayload("");
-    isCurrentRunningCycleCompleted = false;
-}
-
-void CanBusWorkerBasis::setError(const CanBusWorkerBasis::Error &anErrorType, const QString &anErrorInfo)
-{
-    if (anErrorType!=NoError)
-    {
-        anIf(CanBusWorkerBasisDbgEn, anError("Error Occurred !"));
-        ErrorType = anErrorType;
-        ErrorInfo = anErrorInfo;
-        emit ErrorOccurred();
+        initiate();
     }
 }
 
-void CanBusWorkerBasis::clearError()
+void CanBusWorkerBasis::idleCanBusWorkerOnEntry()
 {
-    anIf(CanBusWorkerBasisDbgEn && (ErrorType!=NoError), anWarn("Clear Error !"));
-    ErrorType = NoError;
-    ErrorInfo.clear();
+    if (previousStateName == QStringLiteral("uninitiatedCanBusWorker"))
+    {
+        GlobalSignal iamReady;
+        iamReady.Type = QVariant::fromValue(readyToWork);
+        iamReady.Data = QVariant::fromValue(parent()->objectName());
+        iamReady.TimeStamp = NOW2String;
+        iamReady.DstStrs.append(GlobalSignalCoordinatorObjName);
+        iamReady.SignalPriority = 200;
+        pushAGlobalSignalIntoPrioritizedBuffer(iamReady);
+        emit GlobalSignalExecutionRequested();
+    }
 }
 
-void CanBusWorkerBasis::executePrioritizedBuffer()
+void CanBusWorkerBasis::runningCanBusWorkerOnEntry()
 {
     clearCache();
     if (prioritizedBuffer.size())
     {
-        currentGlobalSignal = prioritizedBuffer.last().takeFirst();
-        deleteEmptyListsFromPrioritizedBuffer();
+        currentGlobalSignal = popMostPrioritizedGlobalSignalOutOfPrioritizedBuffer();
         QString currentGlobalSignalTypeTypeName = currentGlobalSignal.Type.typeName();
         if (currentGlobalSignalTypeTypeName == QStringLiteral("CanBusWorkerBasis::Data"))
         {
@@ -165,26 +91,17 @@ void CanBusWorkerBasis::executePrioritizedBuffer()
             }
         }
     }
-    isCurrentRunningCycleCompleted = true;
-}
-
-void CanBusWorkerBasis::collectFramesReceived()
-{
-    if (currentDev->framesAvailable())
+    if (prioritizedBuffer.isEmpty())
     {
-        GlobalSignal pendingReplyFrameWithTimeStamp;
-        pendingReplyFrameWithTimeStamp.Type = QVariant::fromValue(replyFrameWithTimeStamp);
-        pendingReplyFrameWithTimeStamp.DstStrs.append(SmallCoordinatorObjName);
-        while (currentDev->framesAvailable())
-        {
-            pendingReplyFrameWithTimeStamp.Data = QVariant::fromValue(currentDev->readFrame());
-            pendingReplyFrameWithTimeStamp.TimeStamp = NOW2String;
-            addAGlobalSignal(pendingReplyFrameWithTimeStamp);
-        }
+        emit goIdle();
+    }
+    else
+    {
+        emit GlobalSignalExecutionRequested();
     }
 }
 
-void CanBusWorkerBasis::emitErrorGlobalSignal()
+void CanBusWorkerBasis::errorCanBusWorkerOnEntry()
 {
     anIf(CanBusWorkerBasisDbgEn,
          anError("Emit CanBusWorkerBasis::Error");
@@ -196,27 +113,125 @@ void CanBusWorkerBasis::emitErrorGlobalSignal()
     errorGlobalSignal.Data = QVariant::fromValue(ErrorInfo);
     errorGlobalSignal.Priority = 200;
     errorGlobalSignal.SignalPriority = 200;
-    errorGlobalSignal.DstStrs.append(SmallCoordinatorObjName);
+    errorGlobalSignal.DstStrs.append(GlobalSignalCoordinatorObjName);
     emit Out(errorGlobalSignal);
 }
 
-void CanBusWorkerBasis::queueNotificationReadyToWork()
+void CanBusWorkerBasis::initiate()
 {
-    GlobalSignal iamReady;
-    iamReady.Type = QVariant::fromValue(readyToWork);
-    iamReady.Data = QVariant::fromValue(parent()->objectName());
-    iamReady.TimeStamp = NOW2String;
-    iamReady.DstStrs.append(SmallCoordinatorObjName);
-    iamReady.SignalPriority = 200;
-    addAGlobalSignal(iamReady);
+    dispose();
+    QString * DeviceCreationErrorString = nullptr;
+#if QT_VERSION >= QT_VERSION_CHECK(5,8,0)
+    currentDev = QCanBus::instance()->createDevice(QStringLiteral("socketcan"),
+                                                          QStringLiteral("can0"),
+                                                          DeviceCreationErrorString);
+#else
+    currentDev = QCanBus::instance()->createDevice(QByteArray("socketcan"),
+                                                          QStringLiteral("can0"));
+#endif
+    if (currentDev)
+    {
+        anIf(CanBusWorkerBasisDbgEn,
+            anAck("Device Created !");
+            QObject::connect(currentDev, &QCanBusDevice::stateChanged, this, [&](QCanBusDevice::CanBusDeviceState devState){
+                anWarn("Device State Changed To " << QCanBusDeviceStateMetaEnum.valueToKey(static_cast<int>(devState)));
+            });)
+        QObject::connect(currentDev, &QCanBusDevice::errorOccurred, this, [&](QCanBusDevice::CanBusError devError){
+            setError(DeviceError,QCanBusErrorMetaEnum.valueToKey(static_cast<int>(devError)));
+        });
+        QObject::connect(currentDev, &QCanBusDevice::framesReceived, this, [&](){
+            GlobalSignal queueFramesRead;
+            queueFramesRead.Type = QVariant::fromValue(FrameReceived);
+            pushAGlobalSignalIntoPrioritizedBuffer(queueFramesRead);
+            if (currentStateName == QStringLiteral("idleCanBusWorker"))
+            {
+                emit GlobalSignalExecutionRequested();
+            }
+        });
+        QObject::connect(currentDev, &QCanBusDevice::framesWritten, this, &CanBusWorkerBasis::FramesWritten,
+                         uniqueQtConnectionType);
+        if (currentDev->connectDevice())
+        {
+            isInitiated = true;
+            emit goIdle();
+        }
+        else
+        {
+            anIf(CanBusWorkerBasisDbgEn, anError("Failed To Connect Device !"));
+        }
+    }
+    else
+    {
+        setError(DeviceCreationFailed,DeviceCreationErrorString?*DeviceCreationErrorString:QStringLiteral());
+    }
+    delete DeviceCreationErrorString;
+    DeviceCreationErrorString = nullptr;
+    anIf(CanBusWorkerBasisDbgEn && isInitiated, anAck("CanBusWorkerBasis Initiated !"));
+}
+
+void CanBusWorkerBasis::dispose()
+{
+    anIf(CanBusWorkerBasisDbgEn && isInitiated, anWarn("Clean CanBusWorkerBasis !"));
+    currentStateName.clear();
+    previousStateName.clear();
+    clearPrioritizedBuffer();
+    clearCache();
+    clearError();
+    if (currentDev)
+    {        
+        currentDev->disconnectDevice();
+        delete currentDev;
+        currentDev = nullptr;
+    }
+    isInitiated = false;
+}
+
+void CanBusWorkerBasis::clearCache()
+{
+    currentGlobalSignal = GlobalSignal();
+    lastFrameWritten = QCanBusFrame();
+}
+
+void CanBusWorkerBasis::setError(const CanBusWorkerBasis::Error &anErrorType, const QString &anErrorInfo)
+{
+    if (anErrorType!=NoError)
+    {
+        anIf(CanBusWorkerBasisDbgEn, anError("Error Occurred !"));
+        ErrorType = anErrorType;
+        ErrorInfo = anErrorInfo;
+        emit ErrorOccurred();
+    }
+}
+
+void CanBusWorkerBasis::clearError()
+{
+    anIf(CanBusWorkerBasisDbgEn && (ErrorType!=NoError), anWarn("Clear Error !"));
+    ErrorType = NoError;
+    ErrorInfo.clear();
+}
+
+void CanBusWorkerBasis::collectFramesReceived()
+{
+    if (currentDev->framesAvailable())
+    {
+        GlobalSignal pendingReplyFrameWithTimeStamp;
+        pendingReplyFrameWithTimeStamp.Type = QVariant::fromValue(replyFrameWithTimeStamp);
+        pendingReplyFrameWithTimeStamp.DstStrs.append(GlobalSignalCoordinatorObjName);
+        while (currentDev->framesAvailable())
+        {
+            pendingReplyFrameWithTimeStamp.Data = QVariant::fromValue(currentDev->readFrame());
+            pendingReplyFrameWithTimeStamp.TimeStamp = NOW2String;
+            pushAGlobalSignalIntoPrioritizedBuffer(pendingReplyFrameWithTimeStamp);
+        }
+    }
 }
 
 void CanBusWorkerBasis::In(const GlobalSignal &aGlobalSignal)
 {
-    addAGlobalSignal(aGlobalSignal);
+    pushAGlobalSignalIntoPrioritizedBuffer(aGlobalSignal);
     if (currentStateName == QStringLiteral("idleCanBusWorker"))
     {
-        emit goToState2();
+        emit GlobalSignalExecutionRequested();
     }
 }
 

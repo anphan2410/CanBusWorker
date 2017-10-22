@@ -13,11 +13,7 @@ void idleCanBusWorker::onEntry(QEvent *)
     anIf(CanBusWorkerBasisDbgEn, anTrk("idleCanBusWorker Entered"));
     basisptr->currentStateName = objectName();
     qApp->processEvents();
-    if (basisptr->previousStateName == QStringLiteral("uninitiatedCanBusWorker"))
-    {
-        basisptr->queueNotificationReadyToWork();
-        emit basisptr->goToState2();
-    }
+    basisptr->idleCanBusWorkerOnEntry();
 }
 
 void idleCanBusWorker::onExit(QEvent *)

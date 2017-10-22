@@ -8,8 +8,10 @@ const TypeOfGlobalSignalPriority minGlobalSignalPriority = std::numeric_limits<T
 const Qt::ConnectionType uniqueQtConnectionType = static_cast<Qt::ConnectionType>(Qt::AutoConnection | Qt::UniqueConnection);
 
 const QString piLocalDBWorkerObjName = QStringLiteral("piLocalDBWorker");
-const QString UHV2WorkerObjName = QStringLiteral("UHV2Worker");
-const QString UHV4WorkerObjName = QStringLiteral("UHV4Worker");
-const QString UHV2PVICollectorObjName = QStringLiteral("UHV2PVICollector");
-const QString UHV4PVICollectorObjName = QStringLiteral("UHV4PVICollector");
-const QString SmallCoordinatorObjName = QStringLiteral("SmallCoordinator");
+const QString UHV2SerialPortWorkerObjName = QStringLiteral("UHV2SerialPortWorker");
+const QString UHV4SerialPortWorkerObjName = QStringLiteral("UHV4SerialPortWorker");
+const QString UHV2SerialPortDataProcessorObjName = QStringLiteral("UHV2SerialPortDataProcessor");
+const QString UHV4SerialPortDataProcessorObjName = QStringLiteral("UHV4SerialPortDataProcessor");
+const QString CanBusWorkerObjName = QStringLiteral("CanBusWorker");
+const QString CanDataProcessorObjName = QStringLiteral("CanDataProcessor");
+const QString GlobalSignalCoordinatorObjName = QStringLiteral("GlobalSignalCoordinator");

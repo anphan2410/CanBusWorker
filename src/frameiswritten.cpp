@@ -15,7 +15,7 @@ void FrameIsWritten::onTransition(QEvent *)
         notifyFrameWritten.Type = QVariant::fromValue(CanBusWorkerBasis::FrameWritten);
         notifyFrameWritten.Data = QVariant::fromValue(basisptr->lastFrameWritten);
         notifyFrameWritten.TimeStamp = NOW2String;
-        notifyFrameWritten.DstStrs.append(SmallCoordinatorObjName);
+        notifyFrameWritten.DstStrs.append(GlobalSignalCoordinatorObjName);
         anIf(CanBusWorkerBasisDbgEn, anAck("Frame Written !");
         #if QT_VERSION >= QT_VERSION_CHECK(5,8,0)
                 anInfo(basisptr->lastFrameWritten.toString());
@@ -25,6 +25,5 @@ void FrameIsWritten::onTransition(QEvent *)
         #endif
         );
         emit basisptr->Out(notifyFrameWritten);
-        basisptr->isCurrentRunningCycleCompleted = true;
     }
 }

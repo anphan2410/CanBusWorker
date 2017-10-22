@@ -13,11 +13,12 @@ void errorCanBusWorker::onEntry(QEvent *)
     anIf(CanBusWorkerBasisDbgEn, anTrk("errorCanBusWorker Entered"));
     basisptr->currentStateName = objectName();
     qApp->processEvents();
-    basisptr->emitErrorGlobalSignal();
+    basisptr->errorCanBusWorkerOnEntry();
 }
 
 void errorCanBusWorker::onExit(QEvent *)
 {
     anIf(CanBusWorkerBasisDbgEn, anTrk("Leave errorCanBusWorker"));
     basisptr->previousStateName = objectName();
+    basisptr->clearError();
 }

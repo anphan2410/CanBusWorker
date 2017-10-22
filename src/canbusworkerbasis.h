@@ -56,28 +56,30 @@ public:
     static const QMetaEnum QCanBusDeviceStateMetaEnum;
 
     QCanBusDevice * currentDev = nullptr;
-    Error ErrorType = NoError;
-    QString ErrorInfo;
 
     //Cache
     QCanBusFrame lastFrameWritten;
 
-    void initialize();
-    void dispose();
+    void uninitiatedCanBusWorkerOnEntry();
+    void idleCanBusWorkerOnEntry();
+    void runningCanBusWorkerOnEntry();
+    void errorCanBusWorkerOnEntry();
+
     void setError(const Error & anErrorType, const QString & anErrorInfo);
     void clearError();
-
-    void executePrioritizedBuffer();
-    void collectFramesReceived();
-    void emitErrorGlobalSignal();
-    void queueNotificationReadyToWork();
 signals:
     void FramesWritten();
     void writingFrame();
 public slots:
     void In(const GlobalSignal &aGlobalSignal);
 private:
+    Error ErrorType = NoError;
+    QString ErrorInfo;
+
+    void initiate();
+    void dispose();
     void clearCache();
+    void collectFramesReceived();
 };
 
 Q_DECLARE_METATYPE(QCanBusFrame)

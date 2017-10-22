@@ -5,7 +5,7 @@ AbstractStateMachineBasis::AbstractStateMachineBasis(QObject *parent) : QObject(
 
 }
 
-void AbstractStateMachineBasis::addAGlobalSignal(const GlobalSignal &aGlobalSignal)
+void AbstractStateMachineBasis::pushAGlobalSignalIntoPrioritizedBuffer(const GlobalSignal &aGlobalSignal)
 {
     if (prioritizedBuffer.contains(aGlobalSignal.Priority))
     {
@@ -35,4 +35,11 @@ void AbstractStateMachineBasis::clearPrioritizedBuffer()
 {
     if (prioritizedBuffer.size())
         prioritizedBuffer.clear();
+}
+
+GlobalSignal AbstractStateMachineBasis::popMostPrioritizedGlobalSignalOutOfPrioritizedBuffer()
+{
+    GlobalSignal tmpReturn = prioritizedBuffer.last().takeFirst();
+    deleteEmptyListsFromPrioritizedBuffer();
+    return tmpReturn;
 }

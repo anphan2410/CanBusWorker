@@ -13,18 +13,7 @@ void runningCanBusWorker::onEntry(QEvent *)
     anIf(CanBusWorkerBasisDbgEn, anTrk("runningCanBusWorker Entered"));
     basisptr->currentStateName = objectName();
     qApp->processEvents();
-    basisptr->executePrioritizedBuffer();
-    if (basisptr->isCurrentRunningCycleCompleted)
-    {
-        if (basisptr->prioritizedBuffer.isEmpty())
-        {
-            emit basisptr->goToState1();
-        }
-        else
-        {
-            emit basisptr->goToState2();
-        }
-    }
+    basisptr->runningCanBusWorkerOnEntry();
 }
 
 void runningCanBusWorker::onExit(QEvent *)

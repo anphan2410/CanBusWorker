@@ -24,18 +24,18 @@ public:
     QString currentStateName;
     QString previousStateName;
     bool isInitiated = false;
-    bool isCurrentRunningCycleCompleted = false;
 
-    void addAGlobalSignal(const GlobalSignal &aGlobalSignal);
+    void pushAGlobalSignalIntoPrioritizedBuffer(const GlobalSignal &aGlobalSignal);
     void deleteEmptyListsFromPrioritizedBuffer();
     void clearPrioritizedBuffer();
+    GlobalSignal popMostPrioritizedGlobalSignalOutOfPrioritizedBuffer();
 signals:
     void Out(const GlobalSignal &);
-    void requestDirectTransition(const QString &);
+    void directTransitionRequested(const QString &);
     void ErrorOccurred();
-    void goToState0();//uninitiated
-    void goToState1();//idle
-    void goToState2();//running
+    void InitiationRequested();
+    void goIdle();
+    void GlobalSignalExecutionRequested();
 };
 
 #endif // ABSTRACTSTATEMACHINEBASIS_H

@@ -216,7 +216,7 @@ void CanBusWorkerBasis::collectFramesReceived()
     {
         GlobalSignal pendingReplyFrameWithTimeStamp;
         pendingReplyFrameWithTimeStamp.Type = QVariant::fromValue(replyFrameWithTimeStamp);
-        pendingReplyFrameWithTimeStamp.DstStrs.append(GlobalSignalCoordinatorObjName);
+        pendingReplyFrameWithTimeStamp.DstStrs.append(CanDataProcessorObjName);
         while (currentDev->framesAvailable())
         {
             pendingReplyFrameWithTimeStamp.Data = QVariant::fromValue(currentDev->readFrame());
